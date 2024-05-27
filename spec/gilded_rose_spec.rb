@@ -25,7 +25,7 @@ describe GildedRose do
       @gilded_rose.update_quality()
       expect(@items[0].sell_in).to eq 1
       expect(@items[1].sell_in).to eq 14
-      expect(@items[2].sell_in).to eq 0 # Sulfuras does not change
+      expect(@items[2].sell_in).to eq 0
       expect(@items[3].sell_in).to eq 9
     end
 
@@ -60,7 +60,7 @@ describe GildedRose do
     end
 
     it "degrades quality twice as fast once sell_in date has passed" do
-      10.times { @gilded_rose.update_quality() } # Move sell_in to 0
+      10.times { @gilded_rose.update_quality() }
       current_quality = @items[3].quality
       @gilded_rose.update_quality()
       expect(@items[3].quality).to eq(current_quality - 2)
