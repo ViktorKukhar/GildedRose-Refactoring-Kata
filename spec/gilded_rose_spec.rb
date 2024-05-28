@@ -2,68 +2,108 @@ require_relative '../gilded_rose'
 require 'rspec'
 
 describe GildedRose do
-  before(:each) do
-    @items = [
-      Item.new("Aged Brie", 2, 0),
-      Item.new("Backstage passes to a TAFKAL80ETC concert", 15, 20),
-      Item.new("Sulfuras, Hand of Ragnaros", 0, 80),
-      Item.new("Normal Item", 10, 20)
-    ]
-    @gilded_rose = GildedRose.new(@items)
-  end
-
   describe "#update_quality" do
-    it "does not change the name of items" do
-      @gilded_rose.update_quality()
-      expect(@items[0].name).to eq "Aged Brie"
-      expect(@items[1].name).to eq "Backstage passes to a TAFKAL80ETC concert"
-      expect(@items[2].name).to eq "Sulfuras, Hand of Ragnaros"
-      expect(@items[3].name).to eq "Normal Item"
+    context "when updating Aged Brie" do
+      it "increases quality as it gets older" do
+        items = [Item.new("Aged Brie", 2, 0)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 1
+      end
+
+      it "increases quality twice as fast after sell_in date has passed" do
+        items = [Item.new("Aged Brie", 0, 0)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 2
+      end
+
+      it "does not increase quality above 50" do
+        items = [Item.new("Aged Brie", 2, 50)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 50
+      end
     end
 
-    it "decreases the sell_in value" do
-      @gilded_rose.update_quality()
-      expect(@items[0].sell_in).to eq 1
-      expect(@items[1].sell_in).to eq 14
-      expect(@items[2].sell_in).to eq 0
-      expect(@items[3].sell_in).to eq 9
+    context "when updating Backstage passes" do
+      it "increases quality by 1 when sell_in is more than 10 days" do
+        items = [Item.new("Backstage passes to a TAFKAL80ETC concert", 15, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 21
+      end
+
+      it "increases quality by 2 when sell_in is 10 days or less" do
+        items = [Item.new("Backstage passes to a TAFKAL80ETC concert", 10, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 22
+      end
+
+      it "increases quality by 3 when sell_in is 5 days or less" do
+        items = [Item.new("Backstage passes to a TAFKAL80ETC concert", 5, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 23
+      end
+
+      it "drops quality to 0 after the concert" do
+        items = [Item.new("Backstage passes to a TAFKAL80ETC concert", 0, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 0
+      end
     end
 
-    it "decreases the quality of normal items" do
-      @gilded_rose.update_quality()
-      expect(@items[3].quality).to eq 19
+    context "when updating Sulfuras" do
+      it "does not change sell_in or quality" do
+        items = [Item.new("Sulfuras, Hand of Ragnaros", 0, 80)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].sell_in).to eq 0
+        expect(items[0].quality).to eq 80
+      end
     end
 
-    it "increases the quality of Aged Brie" do
-      @gilded_rose.update_quality()
-      expect(@items[0].quality).to eq 1
+    context "when updating normal items" do
+      it "decreases quality and sell_in by 1 each day" do
+        items = [Item.new("Normal Item", 10, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].sell_in).to eq 9
+        expect(items[0].quality).to eq 19
+      end
+
+      it "decreases quality twice as fast after sell_in date has passed" do
+        items = [Item.new("Normal Item", 0, 20)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 18
+      end
+
+      it "does not decrease quality below 0" do
+        items = [Item.new("Normal Item", 10, 0)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 0
+      end
     end
 
-    it "does not change the quality of Sulfuras" do
-      @gilded_rose.update_quality()
-      expect(@items[2].quality).to eq 80
-    end
+    context "when updating Conjured items" do
+      it "decreases quality twice as fast as normal items" do
+        items = [Item.new("Conjured Mana Cake", 3, 6)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 4
+      end
 
-    it "increases the quality of Backstage passes" do
-      @gilded_rose.update_quality()
-      expect(@items[1].quality).to eq 21
-    end
-
-    it "sets the quality of Backstage passes to 0 after the concert" do
-      16.times { @gilded_rose.update_quality() }
-      expect(@items[1].quality).to eq 0
-    end
-
-    it "does not increase the quality of an item above 50" do
-      50.times { @gilded_rose.update_quality() }
-      expect(@items[0].quality).to be <= 50
-    end
-
-    it "degrades quality twice as fast once sell_in date has passed" do
-      10.times { @gilded_rose.update_quality() }
-      current_quality = @items[3].quality
-      @gilded_rose.update_quality()
-      expect(@items[3].quality).to eq(current_quality - 2)
+      it "decreases quality four times as fast after sell_in date has passed" do
+        items = [Item.new("Conjured Mana Cake", 0, 6)]
+        gilded_rose = GildedRose.new(items)
+        gilded_rose.update_quality
+        expect(items[0].quality).to eq 2
+      end
     end
   end
 end
