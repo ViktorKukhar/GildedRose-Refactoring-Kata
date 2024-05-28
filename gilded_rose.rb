@@ -9,6 +9,8 @@ class GildedRose
         update_aged_brie(item)
       elsif item.name == "Backstage passes to a TAFKAL80ETC concert"
         update_backstage_passes(item)
+      elsif item.name == "Conjured Mana Cake"
+        update_conjured_item(item)
       elsif item.name != "Sulfuras, Hand of Ragnaros"
         update_normal_item(item)
       end
@@ -23,6 +25,10 @@ class GildedRose
 
   def update_normal_item(item)
     decrease_quality(item)
+  end
+
+  def update_conjured_item(item)
+    2.times { decrease_quality(item) }
   end
 
   def update_aged_brie(item)
@@ -40,6 +46,8 @@ class GildedRose
       increase_quality(item)
     elsif item.name == "Backstage passes to a TAFKAL80ETC concert"
       item.quality = 0
+    elsif item.name == "Conjured Mana Cake"
+      2.times { decrease_quality(item) }
     elsif item.name != "Sulfuras, Hand of Ragnaros"
       decrease_quality(item)
     end
